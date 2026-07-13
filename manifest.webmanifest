@@ -1,0 +1,16 @@
+{
+  "name": "Oliveira Transportes",
+  "short_name": "OT Transportes",
+  "description": "Entregas, coletas e logística no Oeste Baiano.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030b18",
+  "theme_color": "#f1ae1f",
+  "icons": [
+    {
+      "src": "assets/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
