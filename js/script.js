@@ -58,7 +58,16 @@ if (fleetGrid) {
 
 const themeStorageKey = "ot-theme";
 const themeValues = new Set(["system", "light", "dark"]);
-const themeSelect = document.querySelector("#theme-select");
+const themeLabels = {
+  system: "Automático",
+  light: "Claro",
+  dark: "Escuro"
+};
+const themePicker = document.querySelector(".theme-picker");
+const themeTrigger = document.querySelector("#theme-trigger");
+const themeMenu = document.querySelector("#theme-menu");
+const themeCurrent = document.querySelector(".theme-current");
+const themeOptions = [...document.querySelectorAll(".theme-option")];
 const themeColor = document.querySelector('meta[name="theme-color"]');
 const systemThemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
@@ -83,7 +92,14 @@ const applyTheme = (preference, persist = false) => {
   document.documentElement.dataset.theme = resolvedTheme;
   document.documentElement.style.colorScheme = resolvedTheme;
 
-  if (themeSelect) themeSelect.value = safePreference;
+  if (themeTrigger) {
+    themeTrigger.dataset.themeValue = safePreference;
+    themeTrigger.setAttribute("aria-label", `Tema: ${themeLabels[safePreference]}`);
+  }
+  if (themeCurrent) themeCurrent.textContent = themeLabels[safePreference];
+  themeOptions.forEach((option) => {
+    option.setAttribute("aria-checked", String(option.dataset.themeValue === safePreference));
+  });
   if (themeColor) themeColor.content = resolvedTheme === "dark" ? "#031022" : "#f4f7f9";
 
   if (persist) {
@@ -97,9 +113,61 @@ const applyTheme = (preference, persist = false) => {
 
 applyTheme(themePreference);
 
-if (themeSelect) {
-  themeSelect.addEventListener("change", (event) => {
-    applyTheme(event.currentTarget.value, true);
+const setThemeMenuState = (isOpen, focusSelected = false) => {
+  if (!themeTrigger || !themeMenu) return;
+  themeMenu.hidden = !isOpen;
+  themeTrigger.setAttribute("aria-expanded", String(isOpen));
+
+  if (isOpen && focusSelected) {
+    window.requestAnimationFrame(() => {
+      themeOptions.find((option) => option.getAttribute("aria-checked") === "true")?.focus();
+    });
+  }
+};
+
+if (themeTrigger && themeMenu) {
+  themeTrigger.addEventListener("click", () => {
+    setThemeMenuState(themeMenu.hidden, true);
+  });
+
+  themeOptions.forEach((option) => {
+    option.addEventListener("click", () => {
+      applyTheme(option.dataset.themeValue, true);
+      setThemeMenuState(false);
+      themeTrigger.focus();
+    });
+  });
+
+  themeMenu.addEventListener("keydown", (event) => {
+    const currentIndex = themeOptions.indexOf(document.activeElement);
+    let nextIndex = currentIndex;
+
+    if (event.key === "ArrowDown") nextIndex = (currentIndex + 1) % themeOptions.length;
+    if (event.key === "ArrowUp") nextIndex = (currentIndex - 1 + themeOptions.length) % themeOptions.length;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = themeOptions.length - 1;
+
+    if (nextIndex !== currentIndex) {
+      event.preventDefault();
+      themeOptions[nextIndex].focus();
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!themePicker?.contains(event.target)) setThemeMenuState(false);
+  });
+
+  themePicker?.addEventListener("focusout", () => {
+    window.requestAnimationFrame(() => {
+      if (!themePicker.contains(document.activeElement)) setThemeMenuState(false);
+    });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !themeMenu.hidden) {
+      setThemeMenuState(false);
+      themeTrigger.focus();
+    }
   });
 }
 

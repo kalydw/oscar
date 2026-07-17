@@ -91,15 +91,31 @@
       <a class="nav-cta" href="https://wa.me/5577991040938" target="_blank" rel="noopener">Orçamento</a>
     </nav>
     <div class="header-tools">
-      <label class="theme-control" for="theme-select">
-        <span class="theme-control-icon" aria-hidden="true"></span>
-        <span class="sr-only">Tema visual</span>
-        <select id="theme-select" aria-label="Escolher tema visual">
-          <option value="system">Automático</option>
-          <option value="light">Claro</option>
-          <option value="dark">Escuro</option>
-        </select>
-      </label>
+      <div class="theme-picker">
+        <button class="theme-trigger" id="theme-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="theme-menu" aria-label="Tema: Automático">
+          <span class="theme-control-icon" aria-hidden="true"></span>
+          <span class="theme-current">Automático</span>
+          <span class="theme-chevron" aria-hidden="true"></span>
+        </button>
+        <div class="theme-menu" id="theme-menu" role="menu" aria-labelledby="theme-trigger" hidden>
+          <p class="theme-menu-label">Aparência do site</p>
+          <button class="theme-option" type="button" role="menuitemradio" aria-checked="true" data-theme-value="system">
+            <span class="theme-option-icon theme-option-icon-system" aria-hidden="true"></span>
+            <span><strong>Automático</strong><small>Segue seu dispositivo</small></span>
+            <span class="theme-check" aria-hidden="true"></span>
+          </button>
+          <button class="theme-option" type="button" role="menuitemradio" aria-checked="false" data-theme-value="light">
+            <span class="theme-option-icon theme-option-icon-light" aria-hidden="true"></span>
+            <span><strong>Claro</strong><small>Visual leve e luminoso</small></span>
+            <span class="theme-check" aria-hidden="true"></span>
+          </button>
+          <button class="theme-option" type="button" role="menuitemradio" aria-checked="false" data-theme-value="dark">
+            <span class="theme-option-icon theme-option-icon-dark" aria-hidden="true"></span>
+            <span><strong>Escuro</strong><small>Conforto em pouca luz</small></span>
+            <span class="theme-check" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
       <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="main-navigation">
         <span></span><span></span><span></span>
       </button>
