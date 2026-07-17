@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.oliveiratransportes.com.br/sitemap.xml
+Sitemap: https://oliveiratransporte.com.br/sitemap.xml
