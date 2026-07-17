@@ -56,47 +56,151 @@ if (fleetGrid) {
   `).join("");
 }
 
-document.querySelectorAll("section, .info-card, .service-card, .fleet-card, .location-card, .client-fit article, .process-grid article, .commitment-grid article").forEach((element) => {
-  element.classList.add("reveal");
-});
+const themeStorageKey = "ot-theme";
+const themeValues = new Set(["system", "light", "dark"]);
+const themeSelect = document.querySelector("#theme-select");
+const themeColor = document.querySelector('meta[name="theme-color"]');
+const systemThemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    entry.target.classList.toggle("is-visible", entry.isIntersecting);
+let themePreference = "system";
+try {
+  const savedTheme = localStorage.getItem(themeStorageKey);
+  if (savedTheme && themeValues.has(savedTheme)) themePreference = savedTheme;
+} catch (error) {
+  themePreference = "system";
+}
+
+const resolveTheme = (preference) => (
+  preference === "system"
+    ? (systemThemeQuery.matches ? "dark" : "light")
+    : preference
+);
+
+const applyTheme = (preference, persist = false) => {
+  const safePreference = themeValues.has(preference) ? preference : "system";
+  const resolvedTheme = resolveTheme(safePreference);
+  themePreference = safePreference;
+  document.documentElement.dataset.theme = resolvedTheme;
+  document.documentElement.style.colorScheme = resolvedTheme;
+
+  if (themeSelect) themeSelect.value = safePreference;
+  if (themeColor) themeColor.content = resolvedTheme === "dark" ? "#031022" : "#f4f7f9";
+
+  if (persist) {
+    try {
+      localStorage.setItem(themeStorageKey, safePreference);
+    } catch (error) {
+      // O tema continua funcionando durante a sessão quando o armazenamento não está disponível.
+    }
+  }
+};
+
+applyTheme(themePreference);
+
+if (themeSelect) {
+  themeSelect.addEventListener("change", (event) => {
+    applyTheme(event.currentTarget.value, true);
   });
-}, { threshold: 0.16, rootMargin: "0px 0px -8% 0px" });
+}
 
-document.querySelectorAll(".reveal").forEach((element) => revealObserver.observe(element));
+const handleSystemThemeChange = () => {
+  if (themePreference === "system") applyTheme("system");
+};
 
+if (typeof systemThemeQuery.addEventListener === "function") {
+  systemThemeQuery.addEventListener("change", handleSystemThemeChange);
+} else if (typeof systemThemeQuery.addListener === "function") {
+  systemThemeQuery.addListener(handleSystemThemeChange);
+}
+
+const header = document.querySelector(".site-header");
 const menuToggle = document.querySelector(".menu-toggle");
 const nav = document.querySelector(".main-nav");
+
+const setMenuState = (isOpen, restoreFocus = false) => {
+  if (!menuToggle || !nav) return;
+  nav.classList.toggle("open", isOpen);
+  document.body.classList.toggle("menu-open", isOpen);
+  menuToggle.setAttribute("aria-expanded", String(isOpen));
+  menuToggle.setAttribute("aria-label", isOpen ? "Fechar menu" : "Abrir menu");
+  if (isOpen && window.innerWidth <= 1120) {
+    window.requestAnimationFrame(() => nav.querySelector("a")?.focus());
+  } else if (restoreFocus) {
+    menuToggle.focus();
+  }
+};
+
 if (menuToggle && nav) {
   menuToggle.addEventListener("click", () => {
-    const isOpen = nav.classList.toggle("open");
-    document.body.classList.toggle("menu-open", isOpen);
-    menuToggle.setAttribute("aria-expanded", String(isOpen));
+    setMenuState(!nav.classList.contains("open"));
   });
 
   nav.addEventListener("click", (event) => {
-    if (event.target instanceof HTMLAnchorElement) {
-      nav.classList.remove("open");
-      document.body.classList.remove("menu-open");
-      menuToggle.setAttribute("aria-expanded", "false");
+    if (event.target instanceof HTMLAnchorElement) setMenuState(false, true);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && nav.classList.contains("open")) {
+      setMenuState(false, true);
     }
   });
+
+  document.addEventListener("pointerdown", (event) => {
+    if (nav.classList.contains("open") && header && !header.contains(event.target)) {
+      setMenuState(false);
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 1120 && nav.classList.contains("open")) setMenuState(false);
+  });
+}
+
+const updateHeaderState = () => {
+  if (header) header.classList.toggle("is-scrolled", window.scrollY > 16);
+};
+
+updateHeaderState();
+window.addEventListener("scroll", updateHeaderState, { passive: true });
+
+const revealElements = document.querySelectorAll(
+  "main section, .info-card, .service-card, .fleet-card, .location-card, .client-fit article, .process-grid article, .commitment-grid article"
+);
+revealElements.forEach((element) => element.classList.add("reveal"));
+
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if (reducedMotion || !("IntersectionObserver" in window)) {
+  revealElements.forEach((element) => element.classList.add("is-visible"));
+} else {
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+
+  revealElements.forEach((element) => revealObserver.observe(element));
 }
 
 const observedSections = [...document.querySelectorAll("main section[id]")];
 const navLinks = [...document.querySelectorAll(".main-nav a[href^='#']")];
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (!entry.isIntersecting) return;
-    navLinks.forEach((link) => {
-      link.classList.toggle("active", link.getAttribute("href") === `#${entry.target.id}`);
+
+if ("IntersectionObserver" in window) {
+  const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      navLinks.forEach((link) => {
+        const isActive = link.getAttribute("href") === `#${entry.target.id}`;
+        link.classList.toggle("active", isActive);
+        if (isActive) link.setAttribute("aria-current", "location");
+        else link.removeAttribute("aria-current");
+      });
     });
-  });
-}, { rootMargin: "-45% 0px -50% 0px", threshold: 0 });
-observedSections.forEach((section) => observer.observe(section));
+  }, { rootMargin: "-42% 0px -52% 0px", threshold: 0 });
+
+  observedSections.forEach((section) => sectionObserver.observe(section));
+}
 
 const year = document.querySelector("#year");
 if (year) year.textContent = new Date().getFullYear();

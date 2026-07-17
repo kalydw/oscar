@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071426">
+  <meta name="color-scheme" content="light dark">
   <title>Oliveira Transportes | Entregas, Coletas e Logística no Oeste Baiano</title>
   <meta name="description" content="Oliveira Transportes oferece entregas, coletas, transporte de cargas, armazenagem e soluções logísticas em Barreiras, Luís Eduardo Magalhães e mais de 30 cidades do Oeste Baiano.">
   <meta name="keywords" content="Oliveira Transportes, transportadora em Barreiras, logística no Oeste Baiano, entregas e coletas, transporte de cargas, cargas fracionadas, armazenagem, distribuição urbana, transportadora Luís Eduardo Magalhães">
   <meta name="robots" content="index, follow">
-  <!-- Troque esta URL pela URL final do domínio quando publicar. -->
   <link rel="canonical" href="https://oliveiratransporte.com.br/">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Oliveira Transportes | Logística no Oeste Baiano">
@@ -21,6 +22,23 @@
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preload" as="image" href="assets/images/hero-truck.jpg">
+  <script>
+    (() => {
+      const storageKey = "ot-theme";
+      let preference = "system";
+
+      try {
+        preference = localStorage.getItem(storageKey) || "system";
+      } catch (error) {
+        preference = "system";
+      }
+
+      if (!['system', 'light', 'dark'].includes(preference)) preference = 'system';
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.dataset.theme = preference === 'system' ? systemTheme : preference;
+      document.documentElement.style.colorScheme = document.documentElement.dataset.theme;
+    })();
+  </script>
   <link rel="stylesheet" href="css/style.css">
   <script type="application/ld+json">
   {
@@ -47,6 +65,7 @@
   </script>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
   <svg class="svg-sprite" aria-hidden="true">
     <symbol id="icon-truck" viewBox="0 0 24 24"><path d="M3 6h11v9H3zM14 10h4l3 3v2h-7zM6 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></symbol>
     <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 2 20 5v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5l8-3Zm-3 10 2 2 4-5"/></symbol>
@@ -63,10 +82,7 @@
       <!-- Para trocar a marca, substitua o arquivo assets/icons/ot-logo.svg. -->
       <img src="assets/icons/ot-logo.svg" alt="Oliveira Transportes" width="156" height="58">
     </a>
-    <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-    <nav class="main-nav" aria-label="Menu principal">
+    <nav class="main-nav" id="main-navigation" aria-label="Menu principal">
       <a href="#quem-somos">Quem somos</a>
       <a href="#servicos">Serviços</a>
       <a href="#cobertura">Cobertura</a>
@@ -74,9 +90,23 @@
       <a href="#estrutura">Estrutura</a>
       <a class="nav-cta" href="https://wa.me/5577991040938" target="_blank" rel="noopener">Orçamento</a>
     </nav>
+    <div class="header-tools">
+      <label class="theme-control" for="theme-select">
+        <span class="theme-control-icon" aria-hidden="true"></span>
+        <span class="sr-only">Tema visual</span>
+        <select id="theme-select" aria-label="Escolher tema visual">
+          <option value="system">Automático</option>
+          <option value="light">Claro</option>
+          <option value="dark">Escuro</option>
+        </select>
+      </label>
+      <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="main-navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </header>
 
-  <main>
+  <main id="main-content" tabindex="-1">
     <section class="hero" id="inicio" aria-labelledby="hero-title">
       <div class="hero-media" role="img" aria-label="Caminhão da Oliveira Transportes em estrada ao pôr do sol"></div>
       <div class="hero-content">
