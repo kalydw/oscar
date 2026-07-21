@@ -1,0 +1,13 @@
+# Arquivos privados e credenciais locais
+/contrato/
+.env
+.env.*
+.vercel/
+*.pem
+*.key
+
+# Arquivos temporários
+Thumbs.db
+.DS_Store
+*.tmp
+*.log
